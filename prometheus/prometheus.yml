@@ -1,0 +1,60 @@
+# my global config
+global:
+  scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+  # scrape_timeout is set to the global default (10s).
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      - 'localhost:9093'
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  - rules_*.yml
+
+  # - "second_rules.yml"
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'prometheus'
+
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+
+    static_configs:
+    - targets: ['localhost:9090']
+  - job_name: 'static_config'
+    static_configs:
+    - targets:
+        - localhost:9100
+        - 192.168.0.71:9100
+        - 192.168.0.201:9100
+      labels: 
+        sd: static
+  - job_name: 'file_sd'
+    file_sd_configs:
+      - files:
+        - /etc/prometheus/sd/*.yml
+        refresh_interval: 1m
+  - job_name: 'openstack'
+    openstack_sd_configs:
+    - identity_endpoint: https://api.selvpc.ru/identity/v3
+      port: 9100
+      domain_name: '234373'
+      username: '049203' # s00000
+      project_name: 'project-s049203' # project-s00000
+      password: '4c07f3a0' # совпадает с ssh паролем
+      role: 'instance'
+      region: 'ru-3' # ru-3
+      refresh_interval: 30s
+
+  - job_name: pushgateway
+    honor_labels: true
+    static_configs:
+    - targets:
+      - localhost:9091
